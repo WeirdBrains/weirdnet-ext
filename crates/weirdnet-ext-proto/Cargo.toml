@@ -1,0 +1,22 @@
+[package]
+name = "weirdnet-ext-proto"
+description = "weirdnet.ext.v1: the protobuf contract between a Weirdnet extension host and its extensions (lifecycle, handshake, capabilities, logging, health), with tonic stubs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+keywords = ["extensions", "grpc", "protobuf", "sandbox", "weirdnet"]
+categories = ["network-programming"]
+include = ["src/**", "proto/**", "build.rs", "README.md", "LICENSE"]
+
+[dependencies]
+tonic.workspace = true
+tonic-prost.workspace = true
+prost.workspace = true
+
+[build-dependencies]
+tonic-prost-build = "0.14"
+protoc-bin-vendored = "3"

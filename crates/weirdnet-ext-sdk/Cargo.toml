@@ -1,0 +1,25 @@
+[package]
+name = "weirdnet-ext-sdk"
+description = "Write Weirdnet extensions: connect to the host over the private socket it started you with, handshake, call app services, log, report health, and handle lifecycle events."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "README.md"
+keywords = ["extensions", "grpc", "sdk", "weirdnet", "plugins"]
+categories = ["network-programming"]
+include = ["src/**", "README.md", "LICENSE"]
+
+[dependencies]
+weirdnet-ext-proto.workspace = true
+tonic.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+hyper-util.workspace = true
+tower.workspace = true
+thiserror.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

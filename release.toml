@@ -1,0 +1,53 @@
+# weirdnet-ext release config for the shared WeirdBrains release script
+# (scripts/weirdnet_release.py, vendored byte-identical from weirdnet-project-helpers; never edit it).
+#
+#   python3 scripts/weirdnet_release.py --dry-run "Short summary"   # then without --dry-run
+#
+helpers = "0.3.2"
+project = "weirdnet-ext"
+timezone = "America/New_York"
+
+[[files]]
+kind = "cargo-workspace"
+path = "Cargo.toml"
+primary = true
+
+[[files]]
+kind = "cargo-lock"
+path = "Cargo.lock"
+
+[changelog]
+path = "CHANGELOG.md"
+links = "https://github.com/WeirdBrains/weirdnet-ext"
+default_section = "Added"
+
+[checks]
+commands = [
+  "cargo fmt --check",
+  "cargo clippy --locked --workspace --all-targets -- -D warnings",
+  "cargo test --locked --workspace",
+  "cargo package --locked --allow-dirty --workspace --exclude weirdnet-ext-e2e",
+]
+
+[crates]
+publish = ["crates/weirdnet-ext-proto", "crates/weirdnet-ext", "crates/weirdnet-ext-sdk"]
+
+[[platforms]]
+os = "linux"
+opt_out = "library crates, published on crates.io; apps ship the binaries"
+
+[[platforms]]
+os = "macos"
+opt_out = "library crates, published on crates.io; apps ship the binaries"
+
+[[platforms]]
+os = "windows"
+opt_out = "library crates, published on crates.io; apps ship the binaries"
+
+[[platforms]]
+os = "android"
+opt_out = "library crates, published on crates.io; apps ship the binaries"
+
+[[platforms]]
+os = "ios"
+opt_out = "library crates, published on crates.io; apps ship the binaries"

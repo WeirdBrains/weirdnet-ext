@@ -1,0 +1,128 @@
+// weirdnet.ext.v1: what every Weirdnet extension and its host share, whatever the app.
+//
+// The host (the app's broker) serves `Host` on a local socket it created for this
+// extension; the extension connects back, calls `Handshake` with the one-time token it was
+// started with, and sends the returned session id in the `x-weirdnet-session` metadata of
+// every later call. Everything the extension can reach goes through these calls, and the
+// host checks each one against the capabilities the user granted.
+syntax = "proto3";
+
+package weirdnet.ext.v1;
+
+service Host {
+  // Prove the extension is the process the host started; get the session and the grants.
+  rpc Handshake(HandshakeRequest) returns (HandshakeReply);
+  // Lifecycle and app events for the extension (server streaming; one stream per session).
+  rpc Events(EventsRequest) returns (stream Event);
+  // A call into an app service (such as morph.ext.v1), checked against the grants.
+  rpc Call(CallRequest) returns (CallReply);
+  // A log line, kept by the host under the extension's id.
+  rpc Log(LogRecord) returns (Empty);
+  // How the extension is doing.
+  rpc Health(HealthReport) returns (Empty);
+}
+
+message Empty {}
+
+message HandshakeRequest {
+  // The one-time token from WEIRDNET_EXT_TOKEN.
+  string token = 1;
+  // The extension id and version from its manifest.
+  string extension_id = 2;
+  string version = 3;
+  // The highest host API version the extension speaks.
+  uint32 api_version = 4;
+  // The SDK and its version, for logs ("weirdnet-ext-sdk 0.1.0").
+  string sdk = 5;
+}
+
+message HandshakeReply {
+  // Send as `x-weirdnet-session` metadata on every later call.
+  string session = 1;
+  // The API version both sides use.
+  uint32 api_version = 2;
+  // What the user granted (see Capability).
+  repeated Capability granted = 3;
+  // The host app and its version ("morph 0.5.0").
+  string host = 4;
+}
+
+message Capability {
+  // Such as "page.read", "net.fetch", "storage".
+  string name = 1;
+  // Site or URL patterns the capability is limited to, if any.
+  repeated string patterns = 2;
+}
+
+message EventsRequest {}
+
+message Event {
+  oneof kind {
+    // Stop soon; the process is killed after the grace period.
+    Stop stop = 1;
+    // The grants changed (a capability revoked or granted).
+    Grants grants = 2;
+    // Liveness check; answer with a Health report.
+    Ping ping = 3;
+    // An app event (such as morph.ext.v1 PageLoaded), prost-encoded.
+    AppEvent app = 4;
+  }
+}
+
+message Stop {
+  string reason = 1;
+  uint32 grace_ms = 2;
+}
+
+message Grants {
+  repeated Capability granted = 1;
+}
+
+message Ping {
+  uint64 seq = 1;
+}
+
+message AppEvent {
+  // Fully qualified message name, such as "morph.ext.v1.PageLoaded".
+  string kind = 1;
+  bytes payload = 2;
+}
+
+message CallRequest {
+  // Service and method, such as "morph.ext.v1.Notes" and "Read".
+  string service = 1;
+  string method = 2;
+  // The prost-encoded request.
+  bytes payload = 3;
+}
+
+message CallReply {
+  bytes payload = 1;
+}
+
+message LogRecord {
+  enum Level {
+    LEVEL_UNSPECIFIED = 0;
+    TRACE = 1;
+    DEBUG = 2;
+    INFO = 3;
+    WARN = 4;
+    ERROR = 5;
+  }
+  Level level = 1;
+  string message = 2;
+  map<string, string> fields = 3;
+}
+
+message HealthReport {
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    READY = 1;
+    BUSY = 2;
+    DEGRADED = 3;
+  }
+  State state = 1;
+  string detail = 2;
+  // Echoes Ping.seq when answering one.
+  uint64 ping = 3;
+}

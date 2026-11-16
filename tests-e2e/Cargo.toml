@@ -1,0 +1,24 @@
+[package]
+name = "weirdnet-ext-e2e"
+description = "End-to-end tests: a real extension in the real sandbox."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "testext"
+path = "src/bin/testext.rs"
+
+[dependencies]
+weirdnet-ext-sdk.workspace = true
+tokio.workspace = true
+serde_json.workspace = true
+libc = "0.2"
+
+[dev-dependencies]
+weirdnet-ext.workspace = true
+weirdnet-ext-proto.workspace = true
+libp2p-identity = { version = "0.3", features = ["ed25519", "rand"] }
+tempfile = "3"

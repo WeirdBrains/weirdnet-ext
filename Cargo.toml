@@ -1,0 +1,28 @@
+[workspace]
+resolver = "3"
+members = ["crates/weirdnet-ext-proto", "crates/weirdnet-ext", "crates/weirdnet-ext-sdk", "tests-e2e"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+authors = ["m3talsmith <m3talsmith@gmail.com>"]
+license = "BSD-3-Clause"
+repository = "https://github.com/WeirdBrains/weirdnet-ext"
+
+[workspace.dependencies]
+weirdnet-ext-proto = { version = "0.1.0", path = "crates/weirdnet-ext-proto" }
+weirdnet-ext = { version = "0.1.0", path = "crates/weirdnet-ext" }
+weirdnet-ext-sdk = { version = "0.1.0", path = "crates/weirdnet-ext-sdk" }
+tonic = "0.14"
+tonic-prost = "0.14"
+prost = "0.14"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "sync", "time", "process", "io-util", "fs"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+tower = { version = "0.5", features = ["util"] }
+thiserror = "2"
+tracing = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"

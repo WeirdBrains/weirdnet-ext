@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+  pull_request:
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: python3 scripts/weirdnet_release.py validate
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - name: Kernel sandbox support
+        run: |
+          uname -r
+          cat /sys/kernel/security/lsm || true
+      - run: cargo test --locked --workspace -- --nocapture
+      - run: RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --workspace --exclude weirdnet-ext-e2e
+      - run: cargo package --locked --workspace --exclude weirdnet-ext-e2e
+
+  linux-arm:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked --workspace -- --nocapture
+
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked --workspace -- --nocapture
