@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
+// Native extensions run on Unix only for now; the rest still builds elsewhere.
+#![cfg_attr(not(unix), allow(unused))]
 
 pub mod broker;
 mod error;

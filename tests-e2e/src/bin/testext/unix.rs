@@ -1,7 +1,3 @@
-//! A test extension. `probe` tries what the sandbox should stop and reports; `crash` exits
-//! with an error after the handshake; `echo` sends app events back through a host call;
-//! `hang` ignores Stop.
-
 use serde_json::json;
 use std::io::Write;
 use weirdnet_ext_sdk::{Event, Extension, Level};
@@ -13,6 +9,7 @@ fn errno<T>(r: std::io::Result<T>) -> serde_json::Value {
     }
 }
 
+#[cfg(target_os = "linux")]
 fn sys(r: libc::c_long) -> serde_json::Value {
     if r < 0 { json!(format!("errno {}", std::io::Error::last_os_error().raw_os_error().unwrap_or(0))) } else { json!("ok") }
 }
@@ -61,7 +58,7 @@ fn probe(data: &str, own: &str) -> serde_json::Value {
     serde_json::Value::Object(r)
 }
 
-fn main() {
+pub fn main() {
     FDS.set(open_fds()).unwrap();
     tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(run());
 }

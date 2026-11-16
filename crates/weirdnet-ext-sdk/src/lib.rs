@@ -1,14 +1,20 @@
 #![doc = include_str!("../README.md")]
 #![warn(missing_docs)]
+// Native extensions run on Unix only for now; the rest still builds elsewhere.
+#![cfg_attr(not(unix), allow(unused))]
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tonic::metadata::{Ascii, MetadataValue};
 use tonic::service::Interceptor;
 use tonic::service::interceptor::InterceptedService;
-use tonic::transport::{Channel, Endpoint};
+use tonic::transport::Channel;
+#[cfg(unix)]
+use tonic::transport::Endpoint;
 use weirdnet_ext_proto::v1::{self, host_client::HostClient};
-use weirdnet_ext_proto::{API_VERSION, ENV_FD, ENV_ID, ENV_TOKEN, SESSION_HEADER};
+#[cfg(unix)]
+use weirdnet_ext_proto::{API_VERSION, ENV_FD};
+use weirdnet_ext_proto::{ENV_ID, ENV_TOKEN, SESSION_HEADER};
 
 pub use tonic::Status;
 pub use weirdnet_ext_proto as proto;
@@ -126,7 +132,10 @@ impl Extension {
         #[cfg(unix)]
         let stream = take_stream()?;
         #[cfg(not(unix))]
-        return Err(Error::NotHosted("native extensions don't run on this OS yet".into()));
+        {
+            let _ = (version, token);
+            return Err(Error::NotHosted("native extensions don't run on this OS yet".into()));
+        }
         #[cfg(unix)]
         {
             let slot = Arc::new(Mutex::new(Some(stream)));

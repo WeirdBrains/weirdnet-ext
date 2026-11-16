@@ -90,6 +90,8 @@ fn rlimit(res: libc::c_int, v: u64) -> bool {
 impl Prepared {
     /// Runs in the child between fork and exec.
     pub(crate) fn apply(&self) -> std::io::Result<()> {
+        // Only the host socket survives exec.
+        super::cloexec_all_but(self.keep_fd);
         // SAFETY: plain system calls on integers.
         unsafe {
             if libc::fcntl(self.keep_fd, libc::F_SETFD, 0) != 0 {

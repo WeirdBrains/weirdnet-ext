@@ -310,8 +310,13 @@ impl Prepared {
         // SAFETY: plain system calls on integers and on memory prepared before the fork.
         unsafe {
             // Only the host socket survives exec.
-            libc::syscall(libc::SYS_close_range, 3u32, (self.keep_fd - 1) as u32, 4u32 /* CLOSE_RANGE_CLOEXEC */);
-            libc::syscall(libc::SYS_close_range, (self.keep_fd + 1) as u32, u32::MAX, 4u32);
+            let below =
+                self.keep_fd <= 3 || libc::syscall(libc::SYS_close_range, 3u32, (self.keep_fd - 1) as u32, 4u32 /* CLOSE_RANGE_CLOEXEC */) == 0;
+            let above = libc::syscall(libc::SYS_close_range, (self.keep_fd + 1) as u32, u32::MAX, 4u32) == 0;
+            if !(below && above) {
+                // Before Linux 5.11.
+                super::cloexec_all_but(self.keep_fd);
+            }
             if libc::fcntl(self.keep_fd, libc::F_SETFD, 0) != 0 {
                 return Err(err());
             }

@@ -9,7 +9,7 @@ publish = false
 
 [[bin]]
 name = "testext"
-path = "src/bin/testext.rs"
+path = "src/bin/testext/main.rs"
 
 [dependencies]
 weirdnet-ext-sdk.workspace = true

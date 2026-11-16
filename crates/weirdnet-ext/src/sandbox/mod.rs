@@ -153,6 +153,24 @@ pub fn probe() -> Report {
     }
 }
 
+/// Marks every descriptor from 3 up, except `keep`, close-on-exec. Async-signal-safe.
+#[cfg(unix)]
+pub(crate) fn cloexec_all_but(keep: std::os::fd::RawFd) {
+    // SAFETY: getrlimit and fcntl on integers.
+    unsafe {
+        let mut l: libc::rlimit = std::mem::zeroed();
+        let max = if libc::getrlimit(libc::RLIMIT_NOFILE, &mut l) == 0 { (l.rlim_cur as u64).min(1 << 16) as i32 } else { 1024 };
+        for fd in 3..max.max(keep + 1) {
+            if fd != keep {
+                let f = libc::fcntl(fd, libc::F_GETFD);
+                if f >= 0 && f & libc::FD_CLOEXEC == 0 {
+                    libc::fcntl(fd, libc::F_SETFD, f | libc::FD_CLOEXEC);
+                }
+            }
+        }
+    }
+}
+
 /// Builds the command for a native extension: sandboxed, empty environment except `env`,
 /// own process group, killed when dropped. `keep_fd` is the only descriptor it inherits.
 #[cfg(unix)]
