@@ -6,7 +6,7 @@ members = ["crates/weirdnet-ext-proto", "crates/weirdnet-ext", "crates/weirdnet-
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.99"
-authors = ["m3talsmith <m3talsmith@gmail.com>"]
+authors = ["Weird Brains LLC"]
 license = "BSD-3-Clause"
 repository = "https://github.com/WeirdBrains/weirdnet-ext"
 
